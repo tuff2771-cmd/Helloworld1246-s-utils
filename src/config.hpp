@@ -80,12 +80,11 @@ inline std::vector<Feature> const& features() {
         {"link_2p", "2P Control Link",
             {choice("link_mode", "Mode", {"Copy", "Invert"}),
              choice("link_driver", "Driving side", {"Player 1", "Player 2"})}},
-        {"wave_spam", "Moving Wave Gap Spam",
+                {"wave_spam", "Moving Wave Gap Spam",
             {tog("wv1_on", "Player 1"), num("wv1_thr", "P1 Threshold", 4.f),
-             num("wv1_center", "P1 Recenter (below)", 150.f), tog("wv1_blue", "P1 Blue Orb", 0.f),
+             tog("wv1_blue", "P1 Blue Orb", 0.f),
              tog("wv2_on", "Player 2"), num("wv2_thr", "P2 Threshold", 4.f),
-             num("wv2_center", "P2 Recenter (below)", 150.f), tog("wv2_blue", "P2 Blue Orb", 0.f)}},
-    };
+             tog("wv2_blue", "P2 Blue Orb", 0.f)}},
     return list;
 }
 
