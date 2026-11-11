@@ -39,7 +39,7 @@ struct ObjCache {
 ObjCache g_cache;
 
 struct PlayerState {
-    bool held = false;
+    bool waveActive = false;
     bool haveY = false;
     float lastY = 0.f;
 };
@@ -181,29 +181,37 @@ void tick(GJBaseGameLayer* l, float dt) {
             float thr = Cfg::get(isP1 ? "wv1_thr" : "wv2_thr");
             bool found = false;
             float center = scanGapCenter(p, found);
-            if (!found) center = Cfg::get(isP1 ? "wv1_center" : "wv2_center");
-
-            float dy = (y - center) * gdir;
-            if (dy < -thr) hold = 1;
-            else if (dy > thr) hold = 0;
-            else hold = (g_frame & 1ULL) ? 1 : 0;
+            if (found) {
+                st.waveActive = true;
+                float dy = (y - center) * gdir;
+                if (dy < -thr) hold = 1;
+                else if (dy > thr) hold = 0;
+                else hold = (g_frame & 1ULL) ? 1 : 0;
+            } else if (st.waveActive) {
+                st.waveActive = false;
+                hold = 0; // left the gap: let go once, then give control back
+            }
 
             if (Cfg::b(isP1 ? "wv1_blue" : "wv2_blue")) {
                 swift += countNear(p, g_cache.gravOrbs, 50.f, 50.f);
             }
+        } else {
+            st.waveActive = false;
         }
 
+        bool swiftSent = false;
         if (swift > 0) {
             swift = std::min(swift, 6);
             for (int k = 0; k < swift; ++k) {
                 l->handleButton(true, 1, isP1);
                 l->handleButton(false, 1, isP1);
             }
-            st.held = false;
+            swiftSent = true;
         }
-        if (hold != -1 && (hold == 1) != st.held) {
-            l->handleButton(hold == 1, 1, isP1);
-            st.held = (hold == 1);
+        if (hold != -1) {
+            // Compare with the real button state of the game, not a remembered one.
+            bool down = swiftSent ? false : p->buttonDown(PlayerButton::Jump);
+            if ((hold == 1) != down) l->handleButton(hold == 1, 1, isP1);
         }
     }
 }
